@@ -1,7 +1,9 @@
 # At a glance
 
 I analyzed all public ethereum transactions from the first month of 2018 to answer the question:
-How long do people hold their Ethereum ?
+
+**How long do people hold their Ethereum ?**
+
 
 **Results**
 
