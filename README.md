@@ -288,10 +288,12 @@ The average holding period across all units of currency was 61.05 hours or 2 day
   
   
 
+<img src="HoldingPeriodHistogram_coin.png" height="400"/>
+<img src="HoldingPeriodHistogram_investor.png" height="400"/>
 
-![Holding period histogram by coin](/HoldingPeriodHistogram_coin.png)
+<!-- ![Holding period histogram by coin](/HoldingPeriodHistogram_coin.png) -->
 
-![Holding period histogram by investor](/HoldingPeriodHistogram_investor.png)
+<!-- ![Holding period histogram by investor](/HoldingPeriodHistogram_investor.png) -->
 
   
   
