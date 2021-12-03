@@ -7,7 +7,7 @@ This brings us to the two types of Ethereum investors.
 1. True believers - These are investors who believe in the core mission of Ethereum: that there will be widespread adoption of cryptocurrency as the most common form of payment in the future. In this case, the price of Ethereum would skyrocket and the true believers would cash out.
 2. non believers - These are people who are just riding the wave. They trade based on fluctuations in Ethereum price in order to make profits. They do not believe in the long term soundness of the investment.
 
-Thus, we can pose an interesting question. How many people are true believers? How many people are non-believers? How many are in between? How long do people hold on to their Ethereum?
+Thus, we can pose some interesting questions. How many people are true believers? How many people are non-believers? How many are in between? How long do people hold on to their Ethereum?
 
 More formally I investigated a couple metrics:
 
