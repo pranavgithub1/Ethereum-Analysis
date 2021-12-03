@@ -32,11 +32,13 @@ Table 1
 
 I defined the lifetime of a unit of ethereum currency on a Last In First Out (LIFO) basis. For example, I assume that the unit of currency Bob bought on Jan 2, 2018 was the one he sold on Jan 3, 2018. Then I label the holding period of this unit of currency as 1 day. Within this time period of 3 days, the unit of currency bought on Jan 1, 2018 has not been relinquished. I label the holding period of this unit as 3 days. I will refer to a unit of 1 ETH as a coin in the rest of this paper.
 
-To answer these questions we can use the power of Google BigQuery. Google BigQuery is a serverless data warehouse that allows scalable and rapid analysis of petabytes of data. Recently BigQuery added the public ethereum[dataset](https://cloud.google.com/blog/products/data-analytics/ethereum-bigquery-public-dataset-smart-contract-analytics), which is an updating dataset that provides big data on the Ethereum cryptocurrency.
+To answer these questions we can use the power of Google BigQuery. Google BigQuery is a serverless data warehouse that allows scalable and rapid analysis of petabytes of data. Recently BigQuery added the public ethereum [dataset](https://cloud.google.com/blog/products/data-analytics/ethereum-bigquery-public-dataset-smart-contract-analytics), which is an updating dataset that provides data on the Ethereum cryptocurrency.
 
 This is actually a collection of datasets, but the one I used was the transactions dataset. The transactions dataset is essentially just 1.3 billion+ rows of every transaction that has taken place on the Ethereum network.
 
 Each transaction has a sender, receiver, value in Wei, and a block timestamp. Let me clear up some terminology. The sender and receiver are represented by wallet addresses. These are unique addresses you get when you are given a wallet to send and receive ethereum (these addresses look like this: 0x89205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7). The value of the transaction is in Ethereum, but it is in a denomination of Ethereum called Wei. One Wei is about 10^18 ETH. The block timestamp is the timestamp of the block that transaction occurred on in the blockchain. The lifetime of a block on the ethereum network is about 13 seconds so the timestamps not being transaction specific will not affect our study. Ethereum bought and sold within the same block will be labeled as having a holding period of 0 days.
+
+This analysis was conducted on the transaction data for the first month of 2018. This time period is large enough to observe patterns and draw conclusions, while not incurring large costs for processing huge amounts of data.
 
 **The Data**
 
@@ -157,17 +159,17 @@ WITH transactions as (
 
 SELECT from_address as address, block_timestamp, transaction_index, from_address, to_address, value/POWER(10,18) as value, 0 as type
 
-FROM \`bigquery-public-data.crypto_ethereum.transactions\` WHERE block_timestamp BETWEEN '2018-01-01 00:00:00 UTC' AND '2018-01-31 23:59:59 UTC' AND value>=10E18 AND from_address IS NOT NULL AND to_address IS NOT NULL AND receipt_status=1
+FROM `bigquery-public-data.crypto_ethereum.transactions` WHERE block_timestamp BETWEEN '2018-01-01 00:00:00 UTC' AND '2018-01-31 23:59:59 UTC' AND value>=10E18 AND from_address IS NOT NULL AND to_address IS NOT NULL AND receipt_status=1
 
 UNION ALL
 
 SELECT to_address as address, block_timestamp, transaction_index, from_address, to_address, value/POWER(10,18) as value, 1 as type
 
-FROM \`bigquery-public-data.crypto_ethereum.transactions\` WHERE block_timestamp BETWEEN '2018-01-01 00:00:00 UTC' AND '2018-01-31 23:59:59 UTC' AND value>=10E18 AND from_address IS NOT NULL AND to_address IS NOT NULL AND receipt_status=1
+FROM `bigquery-public-data.crypto_ethereum.transactions` WHERE block_timestamp BETWEEN '2018-01-01 00:00:00 UTC' AND '2018-01-31 23:59:59 UTC' AND value>=10E18 AND from_address IS NOT NULL AND to_address IS NOT NULL AND receipt_status=1
 
 )
 
-SELECT \* FROM transactions ORDER BY address ASC,block_timestamp ASC,transaction_index ASC
+SELECT * FROM transactions ORDER BY address ASC,block_timestamp ASC,transaction_index ASC
 ```
 The SELECT statements grab all the desired rows, then use a BETWEEN command in order to single out the first 31 days of 2018, and also only takes values greater than 1 ETH.
 
@@ -190,12 +192,12 @@ First I exported the query results from the query in step 1 to a separate BigQue
 
 From there I exported it to a Google Cloud Storage bucket in the form a multiple csv files, since the max export size for csv is 1gb.
 
-These files were then combined and I was able to download all the data to my PC. We will call this input data "transactions.csv". The total size of the data was about 2GB with 11,621,110 rows and 2,952,653 unique addresses represented. This does not seem like much, but the rows still have to be "unrolled" to have each row representing a single ethereum coin. This will drastically increase the size of the data.
+These files were then combined and I was able to download all the data to my PC. We will call this input data "transactions.csv". The total size of the data was about 2GB with 11,621,110 rows and 2,952,653 unique addresses represented. This does not seem like much, but the rows still have to be "unrolled" to have each row representing a single ethereum coin. This will drastically increase the size of the data. 
 
   
 
 
-Pandas, the data science library for Python that I used, loads data fully into memory before working with it. Therefore memory was a constraint. 2GB could be easily loaded into memory for me, but as mentioned the unrolling step would exceed memory. Therefore I had to process the data in chunks.
+Pandas, the data science library for Python that I used, loads data fully into memory before working with it. Therefore memory was a constraint. 2GB could be easily loaded into memory for me, but as mentioned the unrolling step would exceed memory. Therefore I had to process the data in chunks. This memory problem further justifies limiting this proof-of-concept to the first month of 2018. In addition, the program took a long time to run (5+ hours). The more data, the more time it would take to run, and the longer it woudl take to debug.
 
 At first I had tried processing the whole file at once, but the program always exceeded memory when unrolling.
 
@@ -223,8 +225,6 @@ Loop through the transactions. If type is BUY, add the transaction to the stack 
 I keep track of 4 values for every coin:
 
 - address that owns this coin
-
-
 - acquisition timestamp
 - relinquishment timestamp
 - holding period (relinquishment -acquisition)
