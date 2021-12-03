@@ -4,8 +4,10 @@ I analyzed all public ethereum transactions from the first month of 2018 to answ
 
 **How long do people hold their Ethereum ?**
 
+Read starting [here](https://github.com/pranavgithub1/Ethereum-Analysis#introduction) for detailed analysis and explanation of methodology.
 
-**Results**
+
+### Results 
 
 The average holding period across all units of currency was 61.05 hours (~2.5 days) or 8% of the max holding period (31 days).
 
@@ -15,9 +17,7 @@ Second: number of investors (y-axis) with a given average holding period (x-axis
 <img src="HoldingPeriodHistogram_coin.png" height="300"/>
 <img src="HoldingPeriodHistogram_investor.png" height="300"/>
 
-Read on for a full explanation of the methodology.
-
-
+---
 # Introduction
 
 Ethereum is a cryptocurrency that has seen a massive growth in popularity. Introduced in 2015, an 1 Ethereum was worth about 1 USD. Today, the same unit is worth over 3000+ USD. This meteoric growth reflects broader interest in the blockchain - a technology that allows systems to be decentralized. The mission of cryptocurrencies is to transform banking into a decentralized system, without the need for a central bank through which all transactions pass. Like all missions, it has its supporters and skeptics.
@@ -48,7 +48,7 @@ To understand what exactly these metrics mean let's look at an example.
 | Jan 2, 2018 | 1            | BUY  |
 | Jan 3, 2018 | 1            | SELL |
 
-Table 1
+*Table 1*
 
 I defined the lifetime of a unit of ethereum currency on a Last In First Out (LIFO) basis. For example, I assume that the unit of currency Bob bought on Jan 2, 2018 was the one he sold on Jan 3, 2018. Then I label the holding period of this unit of currency as 1 day. Within this time period of 3 days, the unit of currency bought on Jan 1, 2018 has not been relinquished. I label the holding period of this unit as 3 days. I will refer to a unit of 1 ETH as a coin in the rest of this paper.
 
@@ -60,7 +60,7 @@ Each transaction has a sender, receiver, value in Wei, and a block timestamp. Le
 
 This analysis was conducted on the transaction data for the first month of 2018. This time period is large enough to observe patterns and draw conclusions, while not incurring large costs for processing huge amounts of data.
 
-**The Data**
+### The Data
 
 The data used was from the BigQuery public dataset "crypto_ethereum." The table used was the "transactions" table.
 
@@ -70,12 +70,12 @@ Each block in the blockchain is composed of zero or more transactions. Each tran
 
 The important information fields associated with each transactions are important:
 
-- transaction_index : integer index of the transaction on the block
-- from_address : address of the sender
-- to_address : address of the receiver
-- value : value transferred in Wei (10^18 Wei = 1 ETH)
-- block_timestamp : timestamp of the block this transaction was on
-- receipt_status : 1 or 0 corresponding to success or failure of the transaction
+- `transaction_index` : integer index of the transaction on the block
+- `from_address` : address of the sender
+- `to_address` : address of the receiver
+- `value` : value transferred in Wei (10^18 Wei = 1 ETH)
+- `block_timestamp` : timestamp of the block this transaction was on
+- `receipt_status` : 1 or 0 corresponding to success or failure of the transaction
 
 
 # Preprocessing
@@ -118,7 +118,7 @@ Needs to be transformed into 3 rows - 1 row for each 1 ETH unit in the value.
 
 After this we will have a table such as table 1 for each wallet. Then using the LIFO process described in the example, we process the data and get the holding period of each coin.
 
-**Technology stack**
+### Tech stack
 
 Python in conjunction with data science libraries such as Pandas and NumPy could be used for the entirety of the process however I was limited by the 16gb of memory in my laptop and time. Python is very slow at processing big data. In order to be most efficient I needed to get as much of the processing done in the cloud as possible.
 
@@ -135,7 +135,7 @@ However, Python is needed for the LIFO. We will use Python with the libraries Nu
   
 
 
-**Step 1**
+### Step 1
 
 Again step 1 was to transform the raw list of {from_address, to_address, value} transactions into a dataset of the transactions (buy or sell) associated with any given wallet.
 
@@ -191,11 +191,11 @@ FROM `bigquery-public-data.crypto_ethereum.transactions` WHERE block_timestamp B
 
 SELECT * FROM transactions ORDER BY address ASC,block_timestamp ASC,transaction_index ASC
 ```
-The SELECT statements grab all the desired rows, then use a BETWEEN command in order to single out the first 31 days of 2018, and also only takes values greater than 1 ETH.
+The `SELECT` statements grab all the desired rows, then use a `BETWEEN` command in order to single out the first 31 days of 2018, and also only takes values greater than 1 ETH.
 
-The second SELECT statement does the same thing.
+The second `SELECT` statement does the same thing.
 
-The two select statements combined with the union all duplicate each row since we know each row in the original dataset needs to appear twice in the new dataset. Notice that the first select statement labels the type as 0 (sell) and selects from_address and the second labels the type as 1 (buy) and select to_address. This makes sense because each row in the original dataset is a buy for the to_address wallet and a sell for the from_address wallet.
+The two `SELECT` statements combined with the  `UNION ALL` duplicate each row since we know each row in the original dataset needs to appear twice in the new dataset. Notice that the first select statement labels the type as 0 (sell) and selects from_address and the second labels the type as 1 (buy) and select to_address. This makes sense because each row in the original dataset is a buy for the to_address wallet and a sell for the from_address wallet.
 
 Then we take all of this and order it by address, then order it chronologically using the block_timestamp and transaction index.
 
@@ -204,13 +204,9 @@ This data is ready to feed into the program that will calculate the holding peri
   
 
 
-**Step 2**
+### Step 2
 
-All the data just preprocessed in step 1 was in the cloud. I needed to get it on my computer to work with it using python.
-
-First I exported the query results from the query in step 1 to a separate BigQuery table.
-
-From there I exported it to a Google Cloud Storage bucket in the form a multiple csv files, since the max export size for csv is 1gb.
+All the data just preprocessed in step 1 was in the cloud. I needed to get it on my computer to work with it using python. First I exported the query results from the query in step 1 to a separate BigQuery table. From there I exported it to a Google Cloud Storage bucket in the form a multiple csv files, since the max export size for csv is 1gb.
 
 These files were then combined and I was able to download all the data to my PC. We will call this input data "transactions.csv". The total size of the data was about 2GB with 11,621,110 rows and 2,952,653 unique addresses represented. This does not seem like much, but the rows still have to be "unrolled" to have each row representing a single ethereum coin. This will drastically increase the size of the data. 
 
@@ -223,16 +219,16 @@ At first I had tried processing the whole file at once, but the program always e
 
 Therefore I opted for processing the data one wallet at a time. Since the CSV file is sorted by wallet, I wanted to stream through the transactions.csv file and process the holding period stats for the first wallet. Then remove that data from memory and go to the second wallet, etc. The reason I did not just make a separate csv file for each wallet is because there were almost 3 million unique wallets.
 
-Unfortunately I found out that this sort of looping through a csv file was not possible in Pandas without loading it all in memory which would defeat the purpose. However, the read_csv() function in pandas allows you to loop through the csv file in chunks, only loading the chunksize in memory at any given time. Therefore I looped through transactions.csv in chunks of 10,000 lines.
+Unfortunately I found out that this sort of looping through a csv file was not possible in Pandas without loading it all in memory which would defeat the purpose. However, the `read_csv()` function from pandas allows you to loop through the csv file in chunks, only loading the chunksize in memory at any given time. Therefore I looped through transactions.csv in chunks of 10,000 lines.
 
-However each chunk of 10,000 lines may not line up perfectly with a given address. I did not want addresses split between the tail of one chunk and the head of the next. Therefore, beginning with the first chunk I stored any tail-end orphans at the end of a chunk outside the loop, and then appended them to the head of the next chunk. This way the DataFrame i was processing had all the transactions associated with any address in it - none cut off.
+However each chunk of 10,000 lines may not line up perfectly with a given address. I did not want addresses split between the tail of one chunk and the head of the next. Therefore, beginning with the first chunk I stored any tail-end orphans at the end of a chunk outside the loop, and then appended them to the head of the next chunk. This way the DataFrame I was processing had all the transactions associated with any address in it - none cut off.
 
 The data was then unrolled and fed into the holding period calculation function.
 
 
 # Holding Period Calculation
 
-**Algorithm**
+### Algorithm
 
 The holding period was calculated assuming, for a given wallet, the last coin bought is the first coin to be sold. This is explained in Bob's example above (see table 1). I tried doing this with pure python but since this was a heavy looping calculation it turned out to be very slow. I decided to use Cython since I wanted to learn it anyway, and it would speed up the process a lot.
 
@@ -240,14 +236,14 @@ The logic is as follows:
 
 Loop through the transactions. If type is BUY, add the transaction to the stack (a Last In First out data structure) . If type is SELL, pop the top of the stack which would be a BUY transaction. Then subtract the timestamps to get the holding period of the coin associated with those transactions.
 
-**Output 1 - Currency Log**
+### Output 1 (currency log) :
 
 I keep track of 4 values for every coin:
 
-- address that owns this coin
-- acquisition timestamp
-- relinquishment timestamp
-- holding period (relinquishment -acquisition)
+- `address` that owns this coin
+- `acquisition timestamp`
+- `relinquishment timestamp`
+- `holding period` (relinquishment -acquisition)
 
 This becomes the currency log - the first output of the program.
 
@@ -260,7 +256,7 @@ This becomes the currency log - the first output of the program.
   
 
 
-**Output 2 - Investor stats**
+### Output 2 (investor stats) :
 
 Taking the currency log and grouping by address, we can take stats over the holding period for each investor. Then we can find the number of holding periods for that address (the number of coins), mean holding period, min holding period, etc. This gives us the investor stats table with the following columns:
 
@@ -280,11 +276,11 @@ Taking the currency log and grouping by address, we can take stats over the hold
 
 Both outputs were uploaded from CSV files on my computer to BigQuery tables for easy querying and analysis.
 
-**Results**
+### Results
 
 There were 2,952,653 unique wallets that completed transactions for the first month of 2018.
 
-The average holding period across all units of currency was 61.05 hours or 2 days 13 hours or 8% of the max holding period (31 days).
+The average holding period across all units of currency was 61.05 hours (2 days 13 hours) or 8% of the max holding period (31 days).
 
 **Percentiles of holding_period in currency log**
 
