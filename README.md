@@ -1,3 +1,19 @@
+# At a glance
+
+I analyzed all public ethereum transactions from the first month of 2018 to answer the question:
+How long do people hold their Ethereum ?
+
+**Results**
+The average holding period across all units of currency was 61.05 hours or 2 days 13 hours or 8% of the max holding period (31 days).
+On average investors held a given unit of ethereum for 2 days and 13 hours or 8% of the study period.
+
+<p float="left" >
+  <img src="HoldingPeriodHistogram_coin.png" height="300"/>
+  <img src="HoldingPeriodHistogram_investor.png" height="300"/>
+</p>
+
+Read on for a full explanation of the methodology.
+
 # Introduction
 
 Ethereum is a cryptocurrency that has seen a massive growth in popularity. Introduced in 2015, an 1 Ethereum was worth about 1 USD. Today, the same unit is worth over 3000+ USD. This meteoric growth reflects broader interest in the blockchain - a technology that allows systems to be decentralized. The mission of cryptocurrencies is to transform banking into a decentralized system, without the need for a central bank through which all transactions pass. Like all missions, it has its supporters and skeptics.
