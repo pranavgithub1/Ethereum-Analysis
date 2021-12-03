@@ -7,9 +7,10 @@ I analyzed all public ethereum transactions from the first month of 2018 to answ
 
 **Results**
 
-The average holding period across all units of currency was 61.05 hours or 2 days 13 hours or 8% of the max holding period (31 days).
-On average investors held a given unit of ethereum for 2 days and 13 hours or 8% of the study period.
+The average holding period across all units of currency was 61.05 hours (~2.5 days) or 8% of the max holding period (31 days).
 
+Left: number of 1 ETH units (y-axis) with a given holding period (x-axis).
+Right: number of investors (y-axis) with a given average holding period (x-axis).
 <p float="left" >
   <img src="HoldingPeriodHistogram_coin.png" height="300"/>
   <img src="HoldingPeriodHistogram_investor.png" height="300"/>
