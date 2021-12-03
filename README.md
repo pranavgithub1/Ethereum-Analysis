@@ -150,8 +150,9 @@ Is transformed into:
   
 
 
-I used the following SQL query to achieve that
+I used the following SQL query to achieve that:
 
+```sql
 WITH transactions as (
 
 SELECT from_address as address, block_timestamp, transaction_index, from_address, to_address, value/POWER(10,18) as value, 0 as type
@@ -167,7 +168,7 @@ FROM \`bigquery-public-data.crypto_ethereum.transactions\` WHERE block_timestamp
 )
 
 SELECT \* FROM transactions ORDER BY address ASC,block_timestamp ASC,transaction_index ASC
-
+```
 The SELECT statements grab all the desired rows, then use a BETWEEN command in order to single out the first 31 days of 2018, and also only takes values greater than 1 ETH.
 
 The second SELECT statement does the same thing.
